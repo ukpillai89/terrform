@@ -30,21 +30,19 @@ resource "azurerm_monitor_action_group" "myag" {
     use_common_alert_schema = true
   }
 }
-resource "azurerm_monitor_metric_alert" "example" {
+
+module "appservice-alerts-http4xx" {
+  # change source as per folder structure  
+  source              = "./modules/alerts"
   name                = "example-metricalert"
   resource_group_name = data.azurerm_resource_group.myrg.name
   scopes              = [azurerm_app_service.myapp.id]
   description         = "Action will be triggered when HTTP 4xx error spike."
 
-  dynamic_criteria {
-    metric_namespace = azurerm_app_service.myapp.type
-    metric_name      = "Http 4xx"
-    aggregation      = "Total"
-    operator         = "GreaterThan"
-    alertalert_sensitivity = "Medium"
-  }
-
-  action {
-    action_group_id = azurerm_monitor_action_group.myag.id
-  }
+  metric_namespace  = "Microsoft.web/sites"
+  metric_name       = "Http4xx"
+  aggregation       = "Total"
+  operator          = "GreaterThan"
+  alert_sensitivity = "Medium"
+  action_group_id   = azurerm_monitor_action_group.myag.id
 }
