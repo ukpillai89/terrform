@@ -20,15 +20,13 @@ resource "azurerm_app_service" "myapp" {
   app_service_plan_id = azurerm_app_service_plan.myappplan.id
 }
 
-resource "azurerm_monitor_action_group" "myag" {
-  name                = "CriticalAlertsAction"
-  resource_group_name = data.azurerm_resource_group.myrg.name
-  short_name          = "p0action"
-  email_receiver {
-    name                    = "sendtodevops"
-    email_address           = "devops@contoso.com"
-    use_common_alert_schema = true
-  }
+module "actiongroup-appservice" {
+  source                  = "./modules/action-groups"
+  name                    = "CriticalAlertsAction"
+  resource_group_name     = data.azurerm_resource_group.myrg.name
+  short_name              = "p0action"
+  addreser_name           = "sendtodevops"
+  email_address           = "devops@contoso.com"
 }
 
 module "appservice-alerts-http4xx" {
@@ -44,5 +42,5 @@ module "appservice-alerts-http4xx" {
   aggregation       = "Total"
   operator          = "GreaterThan"
   alert_sensitivity = "Medium"
-  action_group_id   = azurerm_monitor_action_group.myag.id
+  action_group_id   = module.actiongroup-appservice.actiongroup-id
 }
